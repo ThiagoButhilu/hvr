@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdownMenu";
+import { BrowserRouter, useNavigate, Routes, Route } from "react-router-dom";
 
 interface Property {
   id: string;
@@ -22,7 +23,17 @@ interface PropertyCardProps {
   property: Property;
 }
 
-const Card = ({ property }: PropertyCardProps) => {
+
+
+
+const EnvironmentCard = ({ property }: PropertyCardProps) => {
+
+ const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/property/${property.id}/edit`);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusStyles = {
       published: "bg-gradient-to-r from-green-500 to-emerald-500 text-white",
@@ -70,25 +81,27 @@ const Card = ({ property }: PropertyCardProps) => {
           
           {/* Action Buttons */}
           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="secondary" className="bg-white/90 backdrop-blur-sm hover:bg-white">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white/95 backdrop-blur-sm">
-                <DropdownMenuItem 
-                  className="flex items-center space-x-2"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>Editar</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center space-x-2">
-                  <Eye className="w-4 h-4" />
-                  <span>Visualizar</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="secondary" className="bg-white/90 backdrop-blur-sm hover:bg-white">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white/95 backdrop-blur-sm">
+              <DropdownMenuItem 
+                className="flex items-center space-x-2"
+                onClick={handleEdit}
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Editar</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center space-x-2">
+                <Eye className="w-4 h-4" />
+                <span>Visualizar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </div>
         </div>
 
@@ -132,4 +145,4 @@ const Card = ({ property }: PropertyCardProps) => {
   );
 };
 
-export default Card;
+export default EnvironmentCard;
