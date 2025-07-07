@@ -6,14 +6,17 @@ import {
   MiniMap,
   Controls,
   Background,
+  BuiltInNode,
   useNodesState,
   useEdgesState,
   Connection,
-  Edge,
+  Edge,Handle, Position, NodeResizer,
   Node,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { Home, Users, Utensils, Bed, Bath, Coffee } from 'lucide-react';
+import { House } from '../classes/house';
+import { Room } from '../classes/room';
 
 interface Environment {
   id: string;
@@ -21,8 +24,20 @@ interface Environment {
   image360: string;
 }
 
+//============================= for close connection]
+
+//==============================
+
+const connectionLineStyle = {
+  stroke: '#b1b1b7',
+  strokeWidth: 3 // Define a espessura da linha
+};
+
+export type NodeType = Room;
+
+
 interface VirtualTourBuilderProps {
-  environments: Environment[];
+  environments: Room[];
 }
 
 const getIconForRoom = (roomName: string) => {
@@ -36,11 +51,11 @@ const getIconForRoom = (roomName: string) => {
   return Home;
 };
 
-const createNodeFromEnvironment = (env: Environment, index: number) => {
-  const Icon = getIconForRoom(env.name);
-  
+const createNodeFromEnvironment = (env: Room, index: number) => {  //node creation !!
+  const Icon = getIconForRoom(env.getName());
+
   return {
-    id: env.id,
+    id: String(env.getId()),
     type: 'default',
     position: { 
       x: 150 + (index % 3) * 200, 
@@ -52,7 +67,7 @@ const createNodeFromEnvironment = (env: Environment, index: number) => {
           <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
             <Icon className="w-6 h-6 text-white" />
           </div>
-          <span className="text-sm font-medium text-center">{env.name || `Ambiente ${index + 1}`}</span>
+          <span className="text-sm font-medium text-center">{env.getName() || `Ambiente ${index + 1}`}</span>
         </div>
       )
     },
@@ -67,10 +82,15 @@ const createNodeFromEnvironment = (env: Environment, index: number) => {
   };
 };
 
-const VirtualTourBuilder = ({ environments }: VirtualTourBuilderProps) => {
+const VirtualTourBuilder = ({ environments }: VirtualTourBuilderProps) => { //loop and creation all environment
   const initialNodes: Node[] = environments.map((env, index) => 
     createNodeFromEnvironment(env, index)
   );
+
+  
+  const onConnect = useCallback((connection: Connection) => {
+  setEdges((eds) => addEdge(connection, eds));
+}, []);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -110,7 +130,7 @@ const VirtualTourBuilder = ({ environments }: VirtualTourBuilderProps) => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={() => console.log("conectou")}
+        onConnect={onConnect}
         fitView
         attributionPosition="bottom-left"
         className="bg-slate-50"
@@ -118,13 +138,13 @@ const VirtualTourBuilder = ({ environments }: VirtualTourBuilderProps) => {
         <Controls className="bg-white shadow-md" />
         <Background color="#e2e8f0" gap={20} />
         <MiniMap 
-          className="bg-white border border-slate-200"
-          nodeColor="#3b82f6"
+          className="bg-white border w-15% border-slate-200"
+          nodeColor="#00a2b9"
           maskColor="rgba(255, 255, 255, 0.8)"
         />
       </ReactFlow>
       
-      <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md border text-xs text-slate-600">
+      <div className="absolute bottom-4 left-4 border-gray-200 bg-white p-3 rounded-lg shadow-md border text-xs text-slate-600">
         <p className="font-medium mb-1">💡 Como usar:</p>
         <p>• Arraste os ambientes para reorganizar</p>
         <p>• Conecte os pontos para criar o fluxo do tour</p>

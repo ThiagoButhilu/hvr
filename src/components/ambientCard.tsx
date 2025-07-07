@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { Upload, Eye, Trash2, X } from "lucide-react";
+import { Room } from "../classes/room";
 
 interface Environment {
   id: string;
@@ -12,12 +13,12 @@ interface Environment {
 }
 
 interface EnvironmentCardProps {
-  environment: Environment;
-  onUpdate: (updates: Partial<Environment>) => void;
+  environment: Room;
   onRemove: () => void;
+  onUpdate: (updates: Partial<Room>) => void;
 }
 
-const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardProps) => {
+const EnvironmentCard = ({ environment, onRemove, onUpdate }: EnvironmentCardProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,23 +28,23 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
-        onUpdate({ image360: event.target.result as string });
+        environment.updateImage360(event.target.result as string);
       }
     };
     reader.readAsDataURL(file);
   };
 
   const handleView360 = () => {
-    if (environment.image360) {
+    if (environment.getImage360()) {
       // Aqui você pode implementar um modal ou página para visualizar a imagem 360°
-      console.log("Visualizar 360°:", environment.name);
+      console.log("Visualizar 360°:", environment.getName());
       // Por enquanto, vamos apenas abrir em nova aba
       const newWindow = window.open();
       if (newWindow) {
         newWindow.document.write(`
           <html>
             <head>
-              <title>Tour 360° - ${environment.name}</title>
+              <title>Tour 360° - ${environment.getName()}</title>
               <style>
                 body { margin: 0; padding: 20px; background: #f5f5f5; font-family: Arial, sans-serif; }
                 h1 { text-align: center; color: #333; }
@@ -52,8 +53,8 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
               </style>
             </head>
             <body>
-              <h1>Tour Virtual 360° - ${environment.name}</h1>
-              <img src="${environment.image360}" alt="Imagem 360° - ${environment.name}" />
+              <h1>Tour Virtual 360° - ${environment.getName()}</h1>
+              <img src="${environment.getImage360()}" alt="Imagem 360° - ${environment.getName()}" />
               <div class="info">
                 <p>💡 Em uma implementação real, aqui seria exibida uma visualização 360° interativa</p>
                 <p>Os usuários poderiam arrastar para explorar todos os ângulos do ambiente</p>
@@ -72,8 +73,8 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
           <div className="flex items-center space-x-2">
             <Input
               placeholder="Nome do ambiente"
-              value={environment.name}
-              onChange={(e) => onUpdate({ name: e.target.value })}
+              value={environment.getName()}
+              onChange={(e) => environment.updateName(e.target.value)}
               className="font-medium text-lg border-none p-0 h-auto focus-visible:ring-0"
             />
             <Badge variant="secondary" className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
@@ -100,7 +101,7 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
           className="hidden"
         />
 
-        {!environment.image360 ? (
+        {!environment.getImage360() ? (
           <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center bg-gradient-to-br from-purple-50 to-pink-50">
             <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-3">
               <span className="text-white text-lg">360°</span>
@@ -123,8 +124,8 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
           <div className="space-y-3">
             <div className="relative group">
               <img
-                src={environment.image360}
-                alt={`Imagem 360° - ${environment.name}`}
+                src={environment.getImage360()}
+                alt={`Imagem 360° - ${environment.getName()}`}
                 className="w-full h-40 object-cover rounded-lg border-2 border-purple-200"
               />
               
@@ -142,7 +143,7 @@ const EnvironmentCard = ({ environment, onUpdate, onRemove }: EnvironmentCardPro
                   <Button
                     size="sm"
                     variant="secondary"
-                    onClick={() => onUpdate({ image360: "" })}
+                    onClick={() => handleView360()}
                     className="bg-white/90 hover:bg-white text-red-600"
                   >
                     <X className="w-4 h-4" />

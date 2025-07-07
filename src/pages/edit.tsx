@@ -20,6 +20,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import EnvironmentCard from "../components/ambientCard"
 import VirtualTourBuilder from "../components/builder";
 import Property360Viewer from "../components/viewer360";
+import { houseData } from "../classes/houseData";
+import { House } from "../classes/house";
+import { Room } from "../classes/room";
 
 interface PropertyFormData {
   title: string;
@@ -40,31 +43,22 @@ interface Environment {
 }
 
 // Mock data - in real app this would come from API
-const mockProperty = {
-  id: "227854103",
-  code: "227854103",
-  status: "published",
-  title: "Studio",
-  location: "ejdbd",
-  image: "/lovable-uploads/dcd5960d-e38a-42a4-b10e-9812d6033010.png",
-  views: 0,
-  date: "19/05/2021"
-};
 
 const PropertyEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const [environments, setEnvironments] = useState<Environment[]>([
-    { id: "1", name: "Entrada", image360: "" },
-    { id: "2", name: "Sala de Jantar", image360: "" }
-  ]);
+  const mockProperty = houseData.find(property => property.getId().toString() === id);
+  if (!mockProperty) {
+    throw new Error("Imóvel não encontrado");
+  }
+
+  const [rooms, setRooms] = useState<Room[]>(mockProperty.getRooms());
 
   const form = useForm<PropertyFormData>({
     defaultValues: {
-      title: mockProperty.title,
-      location: mockProperty.location,
-      status: mockProperty.status,
+      title: mockProperty.getName(),
+      location: mockProperty.getAddress().city,
+      status: mockProperty.getStatus() === 1 ? "published" : mockProperty.getStatus() === 0 ? "draft" : "reserved",
       description: "",
       price: "",
       bedrooms: "2",
@@ -76,28 +70,26 @@ const PropertyEdit = () => {
 
   const onSubmit = (data: PropertyFormData) => {
     console.log("Form data:", data);
-    console.log("Environments:", environments);
+    console.log("Rooms  :", rooms);
     // Aqui você implementaria a lógica para salvar os dados
     navigate("/");
   };
 
-  const addEnvironment = () => {
-    const newEnvironment: Environment = {
-      id: Date.now().toString(),
-      name: "",
-      image360: ""
-    };
-    setEnvironments([...environments, newEnvironment]);
+  const addRoom = () => {
+    const newRoom: Room = new Room(
+      2332, // Use timestamp as unique ID
+      `Ambiente ${rooms.length + 1}`,
+      ""
+    );
+    setRooms([...rooms, newRoom]);
   };
 
-  const updateEnvironment = (id: string, updates: Partial<Environment>) => {
-    setEnvironments(environments.map(env => 
-      env.id === id ? { ...env, ...updates } : env
-    ));
+  const updateRoom = (id: number, updates: Partial<Room>) => {
+    console.log("Updating room:", id, updates);  
   };
 
-  const removeEnvironment = (id: string) => {
-    setEnvironments(environments.filter(env => env.id !== id));
+  const removeRoom = (id: number) => {
+    setRooms(rooms.filter(room => room.getId() !== id));
   };
 
   return (
@@ -118,10 +110,10 @@ const PropertyEdit = () => {
               </Button>
               <div className="flex items-center space-x-2">
                 <h1 className="text-2xl font-bold text-slate-800">
-                  Editar Imóvel - #{mockProperty.code}
+                  Editar Imóvel - #{mockProperty.getCode()}
                 </h1>
-                <Badge variant={mockProperty.status === "published" ? "default" : "secondary"}>
-                  {mockProperty.status === "published" ? "Publicado" : "Rascunho"}
+                <Badge variant={"publish"}>
+                  {mockProperty.getStatusLabel()}
                 </Badge>
               </div>
             </div>
@@ -141,9 +133,9 @@ const PropertyEdit = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto border-gray-100 px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid bg-gray-100 w-full grid-cols-3">
             <TabsTrigger value="details">Detalhes</TabsTrigger>
             <TabsTrigger value="environments">Ambientes 360°</TabsTrigger>
             <TabsTrigger value="virtual-tour">Tour Virtual</TabsTrigger>
@@ -327,7 +319,7 @@ const PropertyEdit = () => {
                   </p>
                 </div>
                 <Button 
-                  onClick={addEnvironment}
+                  onClick={addRoom}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -336,17 +328,17 @@ const PropertyEdit = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {environments.map((environment) => (
+                {rooms.map((room) => (
                   <EnvironmentCard
-                    key={environment.id}
-                    environment={environment}
-                    onUpdate={(updates) => updateEnvironment(environment.id, updates)}
-                    onRemove={() => removeEnvironment(environment.id)}
+                    key={room.getId()}
+                    environment={room}
+                    onRemove={() => removeRoom(room.getId())}
+                    onUpdate={(updates) => updateRoom(room.getId(), updates)}
                   />
                 ))}
               </div>
 
-              {environments.length === 0 && (
+              {rooms.length === 0 && (
                 <Card className="border-2 border-dashed border-purple-300">
                   <CardContent className="p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -359,7 +351,7 @@ const PropertyEdit = () => {
                       Adicione ambientes com tours 360° para uma experiência imersiva
                     </p>
                     <Button 
-                      onClick={addEnvironment}
+                      onClick={addRoom}
                       variant="outline"
                       className="border-purple-300 text-purple-600 hover:bg-purple-50"
                     >
@@ -390,7 +382,7 @@ const PropertyEdit = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <VirtualTourBuilder environments={environments} />
+                    <VirtualTourBuilder environments={rooms} />
                   </CardContent>
                 </Card>
 

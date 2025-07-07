@@ -7,82 +7,26 @@ import {Button} from '../components/ui/button';
 import { Search, Plus } from "lucide-react";
 
 
-const properties = [
-  {
-    id: "227854103",
-    code: "227854103",
-    status: "published",
-    title: "Studio",
-    location: "ejdbd",
-    image: "https://www.cashme.com.br/blog/wp-content/uploads/2020/03/marco-12.jpg",
-    views: 0,
-    date: "19/05/2021"
-  },
-  {
-    id: "19052021",
-    code: "19052021", 
-    status: "published",
-    title: "19052021",
-    location: "Treinamento Rosa",
-    image: "https://imgbr.imovelwebcdn.com/avisos/2/30/04/53/91/36/720x532/4772182180.jpg",
-    views: 0,
-    date: "28/04/2021"
-  },
-  {
-    id: "30042021",
-    code: "30042021",
-    status: "draft",
-    title: "Demonstração Abigail",
-    location: "30042021",
-    image: "https://fotos.sobressai.com.br/fotos/2248/2530801/34833083_m.jpg",
-    views: 0,
-    date: "22/04/2021"
-  },
-  {
-    id: "15281528",
-    code: "15281528",
-    status: "published",
-    title: "Treinamento Rosa",
-    location: "28042021",
-    image: "https://imgs2.cdn-imobibrasil.com.br/imagens/imoveis/202410161848089462.jpeg",
-    views: 302,
-    date: "05/03/2021"
-  },
-  {
-    id: "45341534",
-    code: "45341534",
-    status: "published", 
-    title: "Treinamento Marco",
-    location: "22042021",
-    image: "https://3cc791f55f295f1d.cdn.gocache.net/premium/img_vendas/i1_29969_188037_1349_160324.jpg",
-    views: 302,
-    date: "25/02/2022"
-  },
-  {
-    id: "14371437",
-    code: "14371437",
-    status: "published",
-    title: "Rua Taltal",
-    location: "19042021",
-    image: "https://simonecampagnoli.com.br/wp-content/uploads/2022/06/1-446.jpg",
-    views: 302,
-    date: "22/02/2021"
-  }
-];
+import { houseData } from '../classes/houseData'; //exemplo de importação de casas
+
+
 
 function Index() {
 
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [activeFilter, setActiveFilter] = useState<string>("published");
+  console.log(houseData)
 
-  const filteredProperties = properties.filter(property => {
-    const matchesSearch = property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         property.code.includes(searchTerm);
-    const matchesFilter = activeFilter === "all" || property.status === activeFilter;
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [activeFilter, setActiveFilter] = useState<number>(1);
+
+  const filteredProperties = houseData.filter(property => {
+    const matchesSearch = property.getName().toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         property.getId().toString().includes(searchTerm);
+
+    const matchesFilter = activeFilter === 5 || property.getStatus() === activeFilter;
     return matchesSearch && matchesFilter;
   });
 
-
+  console.log(filteredProperties);
 
   return (
     <div className="App">
@@ -119,9 +63,9 @@ function Index() {
           <div className="mb-8">
             <div className="flex items-center space-x-1 bg-white rounded-xl p-1 shadow-sm border border-slate-200 w-fit">
               {[
-                { key: "published", label: "📋 Publicados", count: 144 },
-                { key: "draft", label: "📝 Rascunhos", count: 95 },
-                { key: "all", label: "📊 Todos", count: 241 }
+                { key: 1, label: "📋 Publicados", count: 144 },
+                { key: 0, label: "📝 Rascunhos", count: 95 },
+                { key: 5, label: "📊 Todos", count: 241 }
               ].map((filter) => (
                 <button
                   key={filter.key}
@@ -148,8 +92,8 @@ function Index() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProperties.map((property) => (
-            <Card key={property.id} property={property} />
+          {filteredProperties.map((house) => (
+            <Card key={house.getId()} house={house} />
           ))}
         </div>
 
